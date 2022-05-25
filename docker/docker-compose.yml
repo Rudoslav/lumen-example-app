@@ -1,0 +1,71 @@
+version: "3"
+services:
+  nginx:
+    env_file:
+      - .env
+    build: nginx
+    command: nginx -g "daemon off;"
+    links:
+      - app
+    ports:
+      - "${NGINX_OUTSIDE_SERVER_PORT}:80"
+    restart: always
+  app:
+    env_file:
+      - .env
+    build:
+      context: app
+      args:
+        APP_MODE: $APP_MODE
+    volumes:
+      - ../lumen-app:/var/www:delegated
+      - ./app/conf.d/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+      - ./app/conf.d/error_reporting.ini:/usr/local/etc/php/conf.d/error_reporting.ini
+    working_dir: /var/www
+    links:
+      - db
+    expose:
+      - 9003
+    environment:
+      PHP_IDE_CONFIG: serverName=localhost
+    restart: always
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+  conveyor_tcp:
+    env_file:
+      - .env
+    build:
+      context: conveyor_tcp
+      args:
+        APP_MODE: $APP_MODE
+    volumes:
+      - ../lumen-app:/var/www:delegated
+      - ./conveyor_tcp/conf.d/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+      - ./conveyor_tcp/conf.d/error_reporting.ini:/usr/local/etc/php/conf.d/error_reporting.ini
+    working_dir: /var/www
+    links:
+      - db
+    expose:
+      - 9003
+    ports:
+      - "${CONVEYOR_TCP_OUTSIDE_PORT}:${CONVEYOR_TCP_INSIDE_PORT}"
+    environment:
+      PHP_IDE_CONFIG: serverName=localhost
+      CONVEYOR_TCP_INSIDE_PORT: $CONVEYOR_TCP_INSIDE_PORT
+    restart: always
+  db:
+    env_file:
+      - .env
+    image: mysql
+    ports:
+      - "${MYSQL_OUTSIDE_PORT}:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: $MYSQL_ROOT_PASSWORD
+      MYSQL_DATABASE: $MYSQL_DATABASE
+      MYSQL_USER: $MYSQL_USER
+      MYSQL_PASSWORD: $MYSQL_PASSWORD
+    volumes:
+      - mysql_datavolume:/var/lib/mysql
+    restart: always
+volumes:
+  mysql_datavolume:

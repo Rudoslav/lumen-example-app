@@ -1,0 +1,15 @@
+.idea/*
+docker/.env
+lumen-app/node_modules
+lumen-app/public/hot
+lumen-app/public/storage
+lumen-app/storage/*.key
+lumen-app/vendor
+lumen-app/.env
+lumen-app/.env.backup
+lumen-app/.phpunit.result.cache
+lumen-app/docker-compose.override.yml
+lumen-app/Homestead.json
+lumen-app/Homestead.yaml
+lumen-app/npm-debug.log
+lumen-app/yarn-error.log
